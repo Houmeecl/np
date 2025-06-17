@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import QrGenerator from "@/components/qr-generator";
-import { Camera, Smartphone, Shield, CheckCircle, AlertCircle } from "lucide-react";
+import { Camera, Smartphone, Shield, CheckCircle, AlertCircle, Timer, RefreshCw, Eye, FileText } from "lucide-react";
 
 interface IdentityVerificationProps {
   documentId: number;
@@ -13,48 +15,102 @@ interface IdentityVerificationProps {
 }
 
 export default function IdentityVerification({ documentId, onComplete, isLoading }: IdentityVerificationProps) {
-  const [step, setStep] = useState<"qr" | "mobile" | "completed">("qr");
+  const [step, setStep] = useState<"qr" | "mobile" | "biometric" | "completed">("qr");
   const [verificationCode, setVerificationCode] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes
   const [mobileData, setMobileData] = useState({
     phone: "",
-    verificationCode: "",
+    smsCode: "",
     faceVerified: false,
-    idVerified: false
+    idVerified: false,
+    livenessVerified: false,
+    documentData: null as any
   });
 
   // Generate verification code when component mounts
   const qrCode = `VERIFY_${documentId}_${Date.now()}`;
 
+  // Timer countdown
+  useEffect(() => {
+    if (step === "mobile" || step === "biometric") {
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            setStep("qr");
+            return 300;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [step]);
+
   const handleQrScan = () => {
-    // Simulate QR scan - in real app this would detect scan
     setStep("mobile");
     setVerificationCode(qrCode);
+    setProgress(25);
   };
 
-  const simulateFaceVerification = () => {
-    // Simulate face verification process
+  const sendSmsCode = () => {
+    // Simulate SMS sending
+    setTimeout(() => {
+      setMobileData(prev => ({ ...prev, smsCode: "123456" }));
+      setProgress(40);
+    }, 1000);
+  };
+
+  const verifyBiometrics = () => {
+    setStep("biometric");
+    setProgress(60);
+    
+    // Simulate biometric verification steps
+    setTimeout(() => {
+      setMobileData(prev => ({ ...prev, livenessVerified: true }));
+      setProgress(70);
+    }, 2000);
+    
     setTimeout(() => {
       setMobileData(prev => ({ ...prev, faceVerified: true }));
-    }, 2000);
+      setProgress(85);
+    }, 3500);
+    
+    setTimeout(() => {
+      setMobileData(prev => ({ 
+        ...prev, 
+        idVerified: true,
+        documentData: {
+          rut: "12.345.678-9",
+          nombre: "Juan Pérez García",
+          nacimiento: "01/01/1985",
+          emisión: "15/06/2020",
+          vencimiento: "15/06/2025"
+        }
+      }));
+      setProgress(100);
+    }, 5000);
   };
 
-  const simulateIdVerification = () => {
-    // Simulate ID verification process
-    setTimeout(() => {
-      setMobileData(prev => ({ ...prev, idVerified: true }));
-    }, 1500);
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const handleComplete = () => {
     const verificationData = {
       verificationCode: qrCode,
       timestamp: new Date().toISOString(),
-      method: "face_id_cedula",
+      method: "biometric_full",
       phone: mobileData.phone,
       faceVerified: mobileData.faceVerified,
       idVerified: mobileData.idVerified,
-      ipAddress: "192.168.1.1", // Mock IP
-      deviceInfo: "Mobile Device"
+      livenessVerified: mobileData.livenessVerified,
+      documentData: mobileData.documentData,
+      ipAddress: "192.168.1.1",
+      deviceInfo: "Mobile Device",
+      securityLevel: "high"
     };
 
     onComplete(verificationData);
