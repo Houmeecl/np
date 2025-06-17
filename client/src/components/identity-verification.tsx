@@ -118,6 +118,22 @@ export default function IdentityVerification({ documentId, onComplete, isLoading
 
   return (
     <div className="space-y-6">
+      {/* Progress Bar */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg">Verificación de Identidad</CardTitle>
+            {(step === "mobile" || step === "biometric") && (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Timer size={16} />
+                <span>{formatTime(timeRemaining)}</span>
+              </div>
+            )}
+          </div>
+          <Progress value={progress} className="w-full" />
+        </CardHeader>
+      </Card>
+
       {/* Step: QR Code Generation */}
       {step === "qr" && (
         <div className="text-center space-y-6">
@@ -126,7 +142,7 @@ export default function IdentityVerification({ documentId, onComplete, isLoading
               <Smartphone className="text-blue-600" size={24} />
             </div>
             <div className="text-left">
-              <h3 className="text-lg font-semibold">Verificación de Identidad</h3>
+              <h3 className="text-lg font-semibold">Inicio de Verificación</h3>
               <p className="text-sm text-gray-600">Escanee el código QR con su teléfono</p>
             </div>
           </div>
@@ -135,7 +151,7 @@ export default function IdentityVerification({ documentId, onComplete, isLoading
             <CardContent className="p-8">
               <QrGenerator value={qrCode} size={200} />
               <p className="text-sm text-gray-600 mt-4">
-                Escanee este código QR con la cámara de su teléfono para continuar con la verificación
+                Escanee este código QR con la cámara de su teléfono para iniciar la verificación biométrica
               </p>
             </CardContent>
           </Card>
@@ -157,105 +173,182 @@ export default function IdentityVerification({ documentId, onComplete, isLoading
         <div className="space-y-6">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="text-green-600" size={32} />
+              <Smartphone className="text-green-600" size={32} />
             </div>
-            <h3 className="text-lg font-semibold">Verificación en Curso</h3>
-            <p className="text-sm text-gray-600">Complete la verificación en su dispositivo móvil</p>
+            <h3 className="text-lg font-semibold">Verificación SMS</h3>
+            <p className="text-sm text-gray-600">Ingrese su número y enviaremos un código</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Phone Input */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <Label htmlFor="phone">Número de Teléfono</Label>
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <Label htmlFor="phone">Número de Teléfono</Label>
+                <div className="flex space-x-3">
                   <Input
                     id="phone"
                     type="tel"
                     value={mobileData.phone}
                     onChange={(e) => setMobileData(prev => ({ ...prev, phone: e.target.value }))}
                     placeholder="+56 9 1234 5678"
+                    className="flex-1"
                   />
-                  <p className="text-xs text-gray-500">
-                    Se enviará un código de verificación a este número
-                  </p>
+                  <Button 
+                    onClick={sendSmsCode} 
+                    disabled={!mobileData.phone || Boolean(mobileData.smsCode)}
+                  >
+                    {mobileData.smsCode ? "Enviado" : "Enviar SMS"}
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Verification Steps */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium">Pasos de Verificación</h4>
-                  
-                  {/* Face Verification */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Camera size={20} className="text-blue-600" />
-                      <span className="text-sm">Verificación Facial</span>
-                    </div>
-                    {mobileData.faceVerified ? (
-                      <CheckCircle className="text-green-600" size={20} />
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={simulateFaceVerification}
-                        disabled={!mobileData.phone}
-                      >
-                        Verificar
-                      </Button>
-                    )}
+                {mobileData.smsCode && (
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-700">
+                      Código SMS enviado: <strong>{mobileData.smsCode}</strong>
+                    </p>
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-                  {/* ID Verification */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Shield size={20} className="text-purple-600" />
-                      <span className="text-sm">Cédula de Identidad</span>
-                    </div>
-                    {mobileData.idVerified ? (
-                      <CheckCircle className="text-green-600" size={20} />
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={simulateIdVerification}
-                        disabled={!mobileData.faceVerified}
-                      >
-                        Verificar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {mobileData.smsCode && (
+            <div className="text-center">
+              <Button onClick={verifyBiometrics} className="btn-chile">
+                Continuar con Verificación Biométrica
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Step: Biometric Verification */}
+      {step === "biometric" && (
+        <div className="space-y-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Eye className="text-purple-600" size={32} />
+            </div>
+            <h3 className="text-lg font-semibold">Verificación Biométrica</h3>
+            <p className="text-sm text-gray-600">Verificando identidad y documento</p>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                <Smartphone className="text-white" size={14} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-blue-800">
-                  Verificación en proceso
-                </p>
-                <p className="text-xs text-blue-700">
-                  Siga las instrucciones en su dispositivo móvil
-                </p>
-              </div>
-            </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Liveness Check */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Detección de Vida</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Eye size={20} className="text-blue-600" />
+                    <span className="text-sm">Verificación de Vida</span>
+                  </div>
+                  {mobileData.livenessVerified ? (
+                    <Badge variant="default" className="bg-green-100 text-green-700">
+                      <CheckCircle size={16} className="mr-1" />
+                      Verificado
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <RefreshCw size={16} className="mr-1 animate-spin" />
+                      Procesando
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Face Verification */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Reconocimiento Facial</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Camera size={20} className="text-purple-600" />
+                    <span className="text-sm">Comparación Facial</span>
+                  </div>
+                  {mobileData.faceVerified ? (
+                    <Badge variant="default" className="bg-green-100 text-green-700">
+                      <CheckCircle size={16} className="mr-1" />
+                      Verificado
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <RefreshCw size={16} className="mr-1 animate-spin" />
+                      Procesando
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Document Verification */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Validación de Documento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FileText size={20} className="text-green-600" />
+                    <span className="text-sm">Cédula de Identidad</span>
+                  </div>
+                  {mobileData.idVerified ? (
+                    <Badge variant="default" className="bg-green-100 text-green-700">
+                      <CheckCircle size={16} className="mr-1" />
+                      Verificado
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <RefreshCw size={16} className="mr-1 animate-spin" />
+                      Procesando
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Document Data */}
+            {mobileData.documentData && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Datos del Documento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">RUT:</span>
+                      <span className="font-mono">{mobileData.documentData.rut}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Nombre:</span>
+                      <span>{mobileData.documentData.nombre}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Nacimiento:</span>
+                      <span>{mobileData.documentData.nacimiento}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Vencimiento:</span>
+                      <span>{mobileData.documentData.vencimiento}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Complete Button */}
-          {mobileData.faceVerified && mobileData.idVerified && (
+          {mobileData.faceVerified && mobileData.idVerified && mobileData.livenessVerified && (
             <div className="text-center">
               <Button
                 onClick={handleComplete}
                 disabled={isLoading}
-                className="btn-chile min-w-[200px]"
+                className="btn-chile min-w-[250px]"
               >
+                <Shield className="mr-2" size={16} />
                 {isLoading ? "Procesando..." : "Completar Verificación"}
               </Button>
             </div>
@@ -290,7 +383,17 @@ export default function IdentityVerification({ documentId, onComplete, isLoading
             </div>
             <div>
               <span className="font-medium">Método:</span><br />
-              FaceID + Validación de Cédula
+              Biometría Completa + Documento
+            </div>
+            <div>
+              <span className="font-medium">Progreso:</span><br />
+              {progress}% completado
+            </div>
+            <div>
+              <span className="font-medium">Estado:</span><br />
+              {step === "qr" && "Esperando escaneo"}
+              {step === "mobile" && "Verificación SMS"}
+              {step === "biometric" && "Verificación biométrica"}
             </div>
           </div>
         </CardContent>
