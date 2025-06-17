@@ -4,12 +4,25 @@ import { Button } from "@/components/ui/button";
 import { BarChart3, Users, DollarSign, FileText, TrendingUp, Crown, Bell, Settings } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 
+interface DocumentStats {
+  total: number;
+  certified: number;
+  pending: number;
+  rejected: number;
+}
+
+interface CommissionStats {
+  totalAmount: number;
+  paidAmount: number;
+  pendingAmount: number;
+}
+
 export default function SuperAdminDashboard() {
-  const { data: documentStats } = useQuery({
+  const { data: documentStats } = useQuery<DocumentStats>({
     queryKey: ["/api/analytics/documents"],
   });
 
-  const { data: commissionStats } = useQuery({
+  const { data: commissionStats } = useQuery<CommissionStats>({
     queryKey: ["/api/analytics/commissions"],
   });
 
@@ -45,7 +58,7 @@ export default function SuperAdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Total Documentos</p>
                   <p className="text-3xl font-bold text-chile-red">
-                    {documentStats?.total || 0}
+                    {documentStats?.total ?? 0}
                   </p>
                 </div>
                 <FileText className="text-chile-red" size={32} />
@@ -59,7 +72,7 @@ export default function SuperAdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Documentos Certificados</p>
                   <p className="text-3xl font-bold text-green-600">
-                    {documentStats?.certified || 0}
+                    {documentStats?.certified ?? 0}
                   </p>
                 </div>
                 <TrendingUp className="text-green-600" size={32} />
@@ -73,7 +86,7 @@ export default function SuperAdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Ingresos Totales</p>
                   <p className="text-3xl font-bold text-chile-blue">
-                    ${commissionStats?.totalAmount?.toLocaleString() || 0}
+                    ${commissionStats?.totalAmount?.toLocaleString() ?? 0}
                   </p>
                 </div>
                 <DollarSign className="text-chile-blue" size={32} />
@@ -87,7 +100,7 @@ export default function SuperAdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Comisiones Pagadas</p>
                   <p className="text-3xl font-bold text-purple-600">
-                    ${commissionStats?.paidAmount?.toLocaleString() || 0}
+                    ${commissionStats?.paidAmount?.toLocaleString() ?? 0}
                   </p>
                 </div>
                 <BarChart3 className="text-purple-600" size={32} />
@@ -155,7 +168,7 @@ export default function SuperAdminDashboard() {
                   <div>
                     <h4 className="font-medium">Comisiones Pendientes</h4>
                     <p className="text-sm text-gray-600">
-                      ${(commissionStats?.totalAmount - commissionStats?.paidAmount)?.toLocaleString() || 0}
+                      ${((commissionStats?.totalAmount ?? 0) - (commissionStats?.paidAmount ?? 0)).toLocaleString()}
                     </p>
                   </div>
                   <Button variant="outline" size="sm">
