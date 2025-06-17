@@ -1,0 +1,70 @@
+
+âœ… TEXTO CONSOLIDADO FINAL â€“ NOTARYPRO + VECINOXPRESS
+
+ðŸ§© NOMBRE DEL PROYECTO:  
+NotaryPro + VecinoXpress  
+Plataforma LegalTech para certificaciÃ³n digital de documentos legales en puntos fÃ­sicos (almacenes, farmacias, minimarkets) y 100% online (RON y POS).
+
+ðŸŒ VISIÃ“N GENERAL:
+La soluciÃ³n combina dos canales:
+- NotaryPro: Plataforma central de firma electrÃ³nica avanzada, validaciÃ³n remota (RON), gestiÃ³n de documentos y panel de certificadores.
+- VecinoXpress: Red nacional de puntos fÃ­sicos de autoservicio legal (POS) donde los vecinos acceden a documentos legales certificados con identidad verificada.
+
+ðŸ–¥ï¸ FUNCIONALIDADES CLAVE
+
+ðŸ”¹ WebApp POS & PWA:
+- SelecciÃ³n de documento desde menÃº (declaraciones juradas, finiquitos, contratos).
+- Ingreso de datos guiado paso a paso.
+- VerificaciÃ³n de identidad escaneando QR â†’ continÃºa en su telÃ©fono â†’ FaceID y CÃ©dula.
+- Firma electrÃ³nica simple tras validaciÃ³n.
+- EnvÃ­o del documento al Panel del Certificador.
+- Firma electrÃ³nica avanzada del certificador.
+- Documento PDF final enviado por correo, WhatsApp y descargable con QR validable.
+
+ðŸ”¹ Panel del Certificador:
+- Login con clave privada y segundo factor.
+- Ver todos los documentos listos para firma.
+- Revisar datos, aprobar o rechazar.
+- Firmar electrÃ³nicamente con eToken/FEA.
+- Ver historial de documentos firmados, en curso y anulados.
+
+ðŸ”¹ Panel Administrador (Superadmin):
+- Dashboard de estadÃ­sticas: documentos firmados, ingresos, POS activos.
+- GestiÃ³n de usuarios (vecinos, certificadores, almacenes).
+- ActivaciÃ³n/desactivaciÃ³n de POS.
+- GestiÃ³n financiera: comisiones automÃ¡ticas, depÃ³sitos a vecinos, informes.
+- GestiÃ³n de RRHH: onboarding de colaboradores, mÃ©tricas.
+- Agente IA que:
+  - Resume operaciones diarias.
+  - Recomienda estrategias de expansiÃ³n, precios y rendimiento.
+  - Identifica oportunidades con municipios o comunidades indÃ­genas.
+  - Comunica por correo, WhatsApp y banner dentro del panel.
+
+ðŸ¤– INTEGRACIONES:
+- FaceIO para verificaciÃ³n facial.
+- FirmaDigital.cl o similar para firma avanzada (FEA).
+- MercadoPago como pasarela de pago en POS.
+- PostgreSQL como base de datos.
+- IA generativa para recomendaciones inteligentes de precio y expansiÃ³n.
+
+ðŸ’¸ MODELO DE NEGOCIO:
+- El vecino (almacÃ©n) solo vende el documento (autoservicio).
+- El certificador firma tras revisar desde su panel.
+- El sistema reconoce cada firma y genera comisiones automÃ¡ticas:
+  - % para Vecino, % para Certificador, % para AdministraciÃ³n.
+- Todo se gestiona desde un Ãºnico sistema central.
+
+ðŸ“ PLATAFORMA MULTIROL:
+- Login y panel separados para:
+  - Superadmin
+  - Certificador
+  - Vecino (almacÃ©n)
+  - Usuario final
+  - Socios/Partners
+  - RRHH
+
+ðŸ›¡ï¸ LEGALIDAD Y PIE DE PÃGINA:
+Este sistema cumple con la Ley NÂ° 19.799 sobre Documentos ElectrÃ³nicos y Firma ElectrÃ³nica de Chile. Todos los documentos generados son legalmente vÃ¡lidos bajo las normativas vigentes, firmados por certificadores autorizados. NotaryPro no es una notarÃ­a ni reemplaza funciones notariales, sino que actÃºa como certificador digital conforme a la ley.
+
+ðŸ OBJETIVO GENERAL:
+Crear la primera red nacional de certificaciÃ³n electrÃ³nica ciudadana en locales de barrio y online, conectando comunidades rurales, indÃ­genas y urbanas con soluciones legales modernas, accesibles y seguras.
