@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(240, 10%, 3.9%);
+  --muted: hsl(210, 40%, 98%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(240, 10%, 3.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(240, 10%, 3.9%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(0, 84%, 60%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(210, 40%, 98%);
+  --secondary-foreground: hsl(222, 84%, 5%);
+  --accent: hsl(210, 40%, 98%);
+  --accent-foreground: hsl(222, 84%, 5%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(215, 20%, 65%);
+  --radius: 0.5rem;
+  
+  /* Chilean government inspired colors */
+  --chile-red: hsl(0, 84%, 60%);
+  --chile-blue: hsl(220, 91%, 34%);
+  --gov-blue: hsl(217, 91%, 60%);
+  --trust-gray: hsl(215, 16%, 47%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(0, 84%, 60%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+/* Custom styles for NotaryPro */
+.chile-gradient {
+  background: linear-gradient(135deg, var(--chile-blue), var(--gov-blue), #3B82F6);
+}
+
+.trust-gradient {
+  background: linear-gradient(135deg, var(--trust-gray), #6B7280);
+}
+
+.btn-chile {
+  @apply bg-chile-red hover:bg-red-700 text-white;
+}
+
+.btn-chile-outline {
+  @apply border-2 border-chile-red text-chile-red hover:bg-chile-red hover:text-white;
+}
+
+.text-chile-red {
+  color: var(--chile-red);
+}
+
+.text-chile-blue {
+  color: var(--chile-blue);
+}
+
+.text-trust-gray {
+  color: var(--trust-gray);
+}
+
+.bg-chile-red {
+  background-color: var(--chile-red);
+}
+
+.bg-chile-blue {
+  background-color: var(--chile-blue);
+}
+
+.border-chile-red {
+  border-color: var(--chile-red);
+}
+
+/* Status indicators */
+.status-pending {
+  @apply bg-orange-100 text-orange-700;
+}
+
+.status-certified {
+  @apply bg-green-100 text-green-700;
+}
+
+.status-rejected {
+  @apply bg-red-100 text-red-700;
+}
+
+.status-draft {
+  @apply bg-gray-100 text-gray-700;
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Professional form styling */
+.form-field {
+  @apply space-y-2;
+}
+
+.form-field label {
+  @apply block text-sm font-medium text-trust-gray;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-chile-red focus:border-transparent transition-all;
+}
+
+/* Dashboard card styling */
+.dashboard-card {
+  @apply bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all;
+}
+
+.metric-card {
+  @apply bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 border border-gray-200;
+}
+
+/* Role-specific color schemes */
+.role-superadmin {
+  @apply bg-gradient-to-br from-chile-red to-red-700 text-white;
+}
+
+.role-certificador {
+  @apply bg-gradient-to-br from-chile-blue to-blue-800 text-white;
+}
+
+.role-vecino {
+  @apply bg-gradient-to-br from-green-600 to-green-700 text-white;
+}
+
+.role-usuario {
+  @apply bg-gradient-to-br from-purple-600 to-purple-700 text-white;
+}
+
+.role-socios {
+  @apply bg-gradient-to-br from-orange-600 to-orange-700 text-white;
+}
+
+.role-rrhh {
+  @apply bg-gradient-to-br from-teal-600 to-teal-700 text-white;
+}
