@@ -187,54 +187,159 @@ export default function SuperAdminDashboard() {
           </Card>
         </div>
 
-        {/* AI Agent Section */}
+        {/* Real-time Analytics */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="text-purple-600" />
+                <span>Análisis en Tiempo Real</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <h4 className="font-semibold text-blue-800">Actividad Hoy</h4>
+                  <p className="text-sm text-blue-700 mt-1">
+                    23 documentos procesados | Tasa de certificación: 89% | 
+                    Tiempo promedio: 2.3 horas
+                  </p>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <h4 className="font-semibold text-green-800">Rendimiento Semanal</h4>
+                  <p className="text-sm text-green-700 mt-1">
+                    Ingresos aumentaron 15% | Declaraciones juradas: documento más solicitado |
+                    42 POS activos
+                  </p>
+                </div>
+
+                <div className="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <h4 className="font-semibold text-orange-800">Alertas del Sistema</h4>
+                  <p className="text-sm text-orange-700 mt-1">
+                    3 POS requieren mantenimiento | 2 certificadores en capacitación |
+                    5 documentos pendientes &gt;24h
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="text-green-600" />
+                <span>Estrategias de Expansión</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                  <h4 className="font-semibold text-purple-800">Oportunidades Detectadas</h4>
+                  <p className="text-sm text-purple-700 mt-1">
+                    Alta demanda en Maipú y Puente Alto - Recomendación: 3 nuevos POS
+                  </p>
+                  <Button size="sm" variant="outline" className="mt-2">
+                    Ver Análisis Completo
+                  </Button>
+                </div>
+                
+                <div className="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500">
+                  <h4 className="font-semibold text-indigo-800">Alianzas Municipales</h4>
+                  <p className="text-sm text-indigo-700 mt-1">
+                    Valparaíso interesado en servicios digitales ciudadanos
+                  </p>
+                  <Button size="sm" variant="outline" className="mt-2">
+                    Generar Propuesta
+                  </Button>
+                </div>
+
+                <div className="bg-teal-50 p-4 rounded-lg border-l-4 border-teal-500">
+                  <h4 className="font-semibold text-teal-800">Optimización de Procesos</h4>
+                  <p className="text-sm text-teal-700 mt-1">
+                    IA sugiere automatizar verificación de identidad para reducir tiempos 40%
+                  </p>
+                  <Button size="sm" variant="outline" className="mt-2">
+                    Implementar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Advanced User Management */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="text-purple-600" />
-              <span>Agente IA - Recomendaciones Inteligentes</span>
+              <Users className="text-chile-red" />
+              <span>Gestión Avanzada de Usuarios</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h4 className="font-semibold text-chile-red">Resumen Operacional</h4>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    📊 <strong>Hoy:</strong> Se procesaron 23 documentos con una tasa de certificación del 89%.
-                    El tiempo promedio de certificación fue de 2.3 horas.
-                  </p>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold">Certificadores</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">María González</p>
+                      <p className="text-xs text-gray-600">15 docs hoy | 4.9⭐</p>
+                    </div>
+                    <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Activo</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Carlos Ruiz</p>
+                      <p className="text-xs text-gray-600">8 docs hoy | 4.7⭐</p>
+                    </div>
+                    <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">Pausa</span>
+                  </div>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    💰 <strong>Ingresos:</strong> Los ingresos de esta semana aumentaron 15% respecto a la semana anterior.
-                    Las declaraciones juradas fueron el tipo de documento más solicitado.
-                  </p>
-                </div>
+                <Button variant="outline" size="sm" className="w-full">
+                  Ver Todos (12)
+                </Button>
               </div>
-              
-              <div className="space-y-4">
-                <h4 className="font-semibold text-chile-red">Estrategias de Expansión</h4>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <p className="text-sm text-orange-800">
-                    🗺️ <strong>Oportunidad:</strong> Se detectó alta demanda en las comunas de Maipú y Puente Alto.
-                    Recomendamos establecer 3 nuevos POS en estas zonas.
-                  </p>
+
+              <div className="space-y-3">
+                <h4 className="font-semibold">POS Vecinos</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">POS Centro</p>
+                      <p className="text-xs text-gray-600">Santiago | 12 docs hoy</p>
+                    </div>
+                    <span className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Online</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">POS Maipú</p>
+                      <p className="text-xs text-gray-600">Maipú | 8 docs hoy</p>
+                    </div>
+                    <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">Offline</span>
+                  </div>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-sm text-purple-800">
-                    🏛️ <strong>Municipios:</strong> El Municipio de Valparaíso mostró interés en una alianza.
-                    Se sugiere una propuesta para servicios digitales ciudadanos.
-                  </p>
-                </div>
+                <Button variant="outline" size="sm" className="w-full">
+                  Ver Todos (45)
+                </Button>
               </div>
-            </div>
-            
-            <div className="mt-6 flex justify-center">
-              <Button className="btn-chile">
-                <Bell className="mr-2" size={16} />
-                Configurar Alertas IA
-              </Button>
+
+              <div className="space-y-3">
+                <h4 className="font-semibold">Usuarios Finales</h4>
+                <div className="space-y-2">
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium">Nuevos Hoy: 23</p>
+                    <p className="text-xs text-gray-600">Total activos: 1,247</p>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="text-sm font-medium">Documentos Creados: 156</p>
+                    <p className="text-xs text-gray-600">Esta semana: +12%</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="w-full">
+                  Panel de Usuario
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
