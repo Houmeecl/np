@@ -109,6 +109,8 @@ The system uses PostgreSQL with the following main entities:
 
 ```
 Changelog:
+- June 23, 2025. Enhanced Certificador dashboard with template-based document creation, client signature capture, and immediate eToken digital signing workflow
+- June 23, 2025. Completed comprehensive role-based dashboard system for all 6 user types (Superadmin, Certificador, Vecino, Usuario, Socios, RRHH)
 - June 17, 2025. Initial setup
 ```
 

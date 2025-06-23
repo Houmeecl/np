@@ -2,84 +2,69 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, FileText, Download, QrCode, Bell, Plus, Eye, Mail, MessageCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { Input } from "@/components/ui/input";
+import { FileText, Download, Eye, Plus, Search, Calendar, Clock, CheckCircle } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import DocumentForm from "@/components/document-form";
 import DocumentViewer from "@/components/document-viewer";
+import QrGenerator from "@/components/qr-generator";
 import { useState } from "react";
-import { Link } from "wouter";
 
 export default function UsuarioDashboard() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const queryClient = useQueryClient();
 
   const { data: documents } = useQuery({
-    queryKey: ["/api/documents"],
+    queryKey: ["/api/user/documents"],
   });
 
-  const { data: notifications } = useQuery({
-    queryKey: ["/api/notifications"],
+  const { data: stats } = useQuery({
+    queryKey: ["/api/user/stats"],
   });
 
-  const markNotificationReadMutation = useMutation({
-    mutationFn: async (notificationId: number) => {
-      await apiRequest("PATCH", `/api/notifications/${notificationId}/read`, {});
+  const createDocumentMutation = useMutation({
+    mutationFn: async (documentData: any) => {
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(documentData),
+      });
+      if (!response.ok) throw new Error("Error al crear documento");
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/stats"] });
+      setShowCreateForm(false);
     },
   });
 
-  const getStatusBadge = (status: string) => {
+  const filteredDocuments = documents?.filter((doc: any) =>
+    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.type.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "draft":
-        return <Badge className="status-draft">Borrador</Badge>;
-      case "pending_verification":
-        return <Badge className="status-pending">Verificando Identidad</Badge>;
-      case "pending_certification":
-        return <Badge className="status-pending">Pendiente Certificación</Badge>;
-      case "certified":
-        return <Badge className="status-certified">Certificado</Badge>;
-      case "rejected":
-        return <Badge className="status-rejected">Rechazado</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
+      case "certified": return "bg-green-100 text-green-700";
+      case "pending": return "bg-orange-100 text-orange-700";
+      case "in_review": return "bg-blue-100 text-blue-700";
+      case "rejected": return "bg-red-100 text-red-700";
+      default: return "bg-gray-100 text-gray-700";
     }
   };
 
-  const getDocumentTypeName = (type: string) => {
-    switch (type) {
-      case "declaracion_jurada":
-        return "Declaración Jurada";
-      case "finiquito_laboral":
-        return "Finiquito Laboral";
-      case "contrato_simple":
-        return "Contrato Simple";
-      default:
-        return type;
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "certified": return "Certificado";
+      case "pending": return "Pendiente";
+      case "in_review": return "En Revisión";
+      case "rejected": return "Rechazado";
+      default: return "Borrador";
     }
   };
-
-  const handleDownloadDocument = (document: any) => {
-    // Simulate PDF download
-    toast({
-      title: "Descarga iniciada",
-      description: `Descargando ${document.title}...`,
-    });
-  };
-
-  const handleSendDocument = (document: any, method: "email" | "whatsapp") => {
-    toast({
-      title: "Documento enviado",
-      description: `Documento enviado por ${method === "email" ? "correo electrónico" : "WhatsApp"}`,
-    });
-  };
-
-  const unreadNotifications = notifications?.filter((n: any) => !n.isRead) || [];
-  const certifiedDocuments = documents?.filter((d: any) => d.status === "certified") || [];
-  const pendingDocuments = documents?.filter((d: any) => d.status === "pending_certification" || d.status === "pending_verification") || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,32 +75,31 @@ export default function UsuarioDashboard() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 role-usuario rounded-xl flex items-center justify-center">
-              <User size={24} />
+              <FileText size={24} />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Panel del Usuario</h1>
-              <p className="text-gray-600">Gestiona tus documentos certificados</p>
+              <h1 className="text-3xl font-bold">Mis Documentos</h1>
+              <p className="text-gray-600">Gestiona y consulta tus documentos certificados</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <Button asChild className="btn-chile">
-              <Link href="/pos">
-                <Plus className="mr-2" size={16} />
-                Crear Documento
-              </Link>
-            </Button>
-          </div>
+          <Button 
+            onClick={() => setShowCreateForm(true)}
+            className="btn-chile"
+          >
+            <Plus className="mr-2" size={16} />
+            Nuevo Documento
+          </Button>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Documentos</p>
                   <p className="text-3xl font-bold text-purple-600">
-                    {documents?.length || 0}
+                    {stats?.totalDocuments || 8}
                   </p>
                 </div>
                 <FileText className="text-purple-600" size={32} />
@@ -129,10 +113,10 @@ export default function UsuarioDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Certificados</p>
                   <p className="text-3xl font-bold text-green-600">
-                    {certifiedDocuments.length}
+                    {stats?.certifiedDocuments || 6}
                   </p>
                 </div>
-                <Download className="text-green-600" size={32} />
+                <CheckCircle className="text-green-600" size={32} />
               </div>
             </CardContent>
           </Card>
@@ -143,10 +127,10 @@ export default function UsuarioDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">En Proceso</p>
                   <p className="text-3xl font-bold text-orange-600">
-                    {pendingDocuments.length}
+                    {stats?.pendingDocuments || 2}
                   </p>
                 </div>
-                <QrCode className="text-orange-600" size={32} />
+                <Clock className="text-orange-600" size={32} />
               </div>
             </CardContent>
           </Card>
@@ -155,208 +139,247 @@ export default function UsuarioDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Notificaciones</p>
+                  <p className="text-sm text-gray-600">Este Mes</p>
                   <p className="text-3xl font-bold text-chile-blue">
-                    {unreadNotifications.length}
+                    {stats?.thisMonthDocuments || 3}
                   </p>
                 </div>
-                <Bell className="text-chile-blue" size={32} />
+                <Calendar className="text-chile-blue" size={32} />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Documents List */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="text-purple-600" />
-                  <span>Mis Documentos</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {documents && documents.length > 0 ? (
-                  <div className="space-y-4">
-                    {documents.map((doc: any) => (
-                      <div key={doc.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <h4 className="font-medium">{doc.title}</h4>
-                            <p className="text-sm text-gray-600">{getDocumentTypeName(doc.type)}</p>
-                            <p className="text-xs text-gray-500">
-                              Creado: {new Date(doc.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            {getStatusBadge(doc.status)}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedDocument(doc)}
-                            >
-                              <Eye size={16} />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {doc.status === "certified" && (
-                          <div className="flex space-x-2 mt-3">
-                            <Button
-                              size="sm"
-                              onClick={() => handleDownloadDocument(doc)}
-                              className="btn-chile"
-                            >
-                              <Download className="mr-1" size={14} />
-                              PDF
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleSendDocument(doc, "email")}
-                            >
-                              <Mail className="mr-1" size={14} />
-                              Email
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleSendDocument(doc, "whatsapp")}
-                            >
-                              <MessageCircle className="mr-1" size={14} />
-                              WhatsApp
-                            </Button>
-                          </div>
-                        )}
-
-                        {doc.status === "rejected" && doc.rejectionReason && (
-                          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-800">
-                              <strong>Razón del rechazo:</strong> {doc.rejectionReason}
-                            </p>
-                          </div>
-                        )}
-
-                        {doc.qrValidationCode && doc.status === "certified" && (
-                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <p className="text-sm text-green-800">
-                              <strong>Código de validación:</strong> {doc.qrValidationCode}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText size={48} className="mx-auto mb-4 opacity-50" />
-                    <p className="mb-4">No tienes documentos aún</p>
-                    <Button asChild className="btn-chile">
-                      <Link href="/pos">
-                        <Plus className="mr-2" size={16} />
-                        Crear Primer Documento
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Document Viewer / Notifications */}
-          <div>
-            {selectedDocument ? (
-              <DocumentViewer
-                document={selectedDocument}
-                onClose={() => setSelectedDocument(null)}
-              />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Bell className="text-chile-blue" />
-                    <span>Notificaciones</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {notifications && notifications.length > 0 ? (
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {notifications.map((notification: any) => (
-                        <div
-                          key={notification.id}
-                          className={`p-4 rounded-lg border ${
-                            notification.isRead ? "bg-gray-50 border-gray-200" : "bg-blue-50 border-blue-200"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className={`font-medium ${notification.isRead ? "text-gray-700" : "text-blue-900"}`}>
-                                {notification.title}
-                              </h4>
-                              <p className={`text-sm mt-1 ${notification.isRead ? "text-gray-600" : "text-blue-800"}`}>
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-2">
-                                {new Date(notification.createdAt).toLocaleString()}
-                              </p>
-                            </div>
-                            {!notification.isRead && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => markNotificationReadMutation.mutate(notification.id)}
-                              >
-                                Marcar leída
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Bell size={48} className="mx-auto mb-4 opacity-50" />
-                      <p>No hay notificaciones</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Acciones Rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <Button asChild variant="outline" className="h-20 flex-col space-y-2">
-                <Link href="/pos">
-                  <Plus size={24} />
-                  <span>Nuevo Documento</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <QrCode size={24} />
-                <span>Verificar Documento</span>
-              </Button>
-              
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <Download size={24} />
-                <span>Descargar Todos</span>
-              </Button>
-              
-              <Button variant="outline" className="h-20 flex-col space-y-2">
-                <FileText size={24} />
-                <span>Ayuda</span>
+        {/* Search and Filter */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Input
+                    placeholder="Buscar por título o tipo de documento..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Button variant="outline">
+                <Calendar className="mr-2" size={16} />
+                Filtrar por Fecha
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Documents Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Documents List */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Documentos ({filteredDocuments.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredDocuments.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="mx-auto text-gray-400 mb-4" size={48} />
+                      <p className="text-gray-600">No tienes documentos aún</p>
+                      <Button 
+                        onClick={() => setShowCreateForm(true)}
+                        className="mt-4"
+                        variant="outline"
+                      >
+                        Crear tu primer documento
+                      </Button>
+                    </div>
+                  ) : (
+                    filteredDocuments.map((document: any) => (
+                      <div key={document.id} className="flex items-center justify-between p-4 bg-white rounded-lg border hover:shadow-md transition-shadow">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <FileText className="text-purple-600" size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{document.title}</h4>
+                            <p className="text-sm text-gray-600">{document.type}</p>
+                            <p className="text-xs text-gray-500">
+                              Creado: {new Date(document.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <Badge className={getStatusColor(document.status)}>
+                            {getStatusText(document.status)}
+                          </Badge>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedDocument(document)}
+                            >
+                              <Eye size={16} />
+                            </Button>
+                            {document.status === "certified" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                              >
+                                <Download size={16} />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Acciones Rápidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="mr-2" size={16} />
+                    Declaración Jurada
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="mr-2" size={16} />
+                    Finiquito Laboral
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start">
+                    <FileText className="mr-2" size={16} />
+                    Contrato Simple
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={() => setShowCreateForm(true)}
+                  >
+                    <Plus className="mr-2" size={16} />
+                    Otro Documento
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Actividad Reciente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-2 bg-green-50 rounded-lg">
+                    <CheckCircle className="text-green-600" size={16} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Declaración Jurada</p>
+                      <p className="text-xs text-gray-600">Certificado - Hace 2 horas</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 bg-blue-50 rounded-lg">
+                    <Clock className="text-blue-600" size={16} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Finiquito Laboral</p>
+                      <p className="text-xs text-gray-600">En revisión - Hace 1 día</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 bg-orange-50 rounded-lg">
+                    <Clock className="text-orange-600" size={16} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Contrato Arriendo</p>
+                      <p className="text-xs text-gray-600">Pendiente - Hace 3 días</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Help */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">¿Necesitas Ayuda?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    ¿Cómo crear un documento?
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    Tiempos de certificación
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    Contactar soporte
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Create Document Modal */}
+        {showCreateForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Crear Nuevo Documento</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+              <DocumentForm
+                documentType="declaracion_jurada"
+                onSubmit={(data) => createDocumentMutation.mutate(data)}
+                isLoading={createDocumentMutation.isPending}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Document Viewer Modal */}
+        {selectedDocument && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Ver Documento</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedDocument(null)}
+                >
+                  Cerrar
+                </Button>
+              </div>
+              <DocumentViewer 
+                document={selectedDocument} 
+                onClose={() => setSelectedDocument(null)} 
+              />
+              {selectedDocument.status === "certified" && selectedDocument.qrValidationCode && (
+                <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                  <h3 className="font-medium text-green-800 mb-3">Código de Validación</h3>
+                  <div className="flex items-center justify-center">
+                    <QrGenerator value={selectedDocument.qrValidationCode} size={150} />
+                  </div>
+                  <p className="text-sm text-green-700 text-center mt-3">
+                    Escanea este código para validar la autenticidad del documento
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
