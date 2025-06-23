@@ -9,6 +9,7 @@ import {
   UserPlus, Building, Eye, Download
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
+import UserManagementPanel from "@/components/user-management-panel";
 import { useState } from "react";
 
 export default function SuperadminDashboard() {
@@ -34,6 +35,10 @@ export default function SuperadminDashboard() {
 
   const { data: recentActivity } = useQuery({
     queryKey: ["/api/admin/recent-activity"],
+  });
+
+  const { data: allUsers } = useQuery({
+    queryKey: ["/api/admin/users"],
   });
 
   const createUserMutation = useMutation({
@@ -301,13 +306,21 @@ export default function SuperadminDashboard() {
           </div>
         </div>
 
-        {/* User Management */}
+        {/* User Management Panel */}
+        <div className="mb-8">
+          <UserManagementPanel 
+            users={allUsers || []}
+            isLoading={false}
+          />
+        </div>
+
+        {/* Quick User Stats */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Users className="text-purple-600" />
-                <span>Gestión de Usuarios</span>
+                <span>Estadísticas de Usuarios</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -337,30 +350,23 @@ export default function SuperadminDashboard() {
                 {/* Recent Registrations */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm">Registros Recientes</h4>
-                  {[
-                    { name: "Pedro Silva", role: "certificador", time: "Hace 2h" },
-                    { name: "Local Centro", role: "vecino", time: "Hace 5h" },
-                    { name: "Laura Morales", role: "usuario", time: "Hace 1d" }
-                  ].map((user, index) => (
+                  {(allUsers || []).slice(0, 3).map((user: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                           <Users size={14} />
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{user.name}</p>
+                          <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
                           <p className="text-xs text-gray-600 capitalize">{user.role}</p>
                         </div>
                       </div>
-                      <span className="text-xs text-gray-500">{user.time}</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   ))}
                 </div>
-
-                <Button className="w-full" variant="outline">
-                  <UserPlus className="mr-2" size={16} />
-                  Crear Nuevo Usuario
-                </Button>
               </div>
             </CardContent>
           </Card>

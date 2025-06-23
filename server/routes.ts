@@ -21,6 +21,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management routes
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'superadmin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.post('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'superadmin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { email, password, firstName, lastName, role, rut, phone } = req.body;
+
+      // Validate required fields
+      if (!email || !password || !firstName || !lastName || !role) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User with this email already exists" });
+      }
+
+      // Create user with credentials
+      const newUser = await storage.createUserWithCredentials({
+        email,
+        password,
+        firstName,
+        lastName,
+        role,
+        rut,
+        phone,
+      });
+
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
+  app.post('/api/admin/users/:userId/toggle', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'superadmin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { userId } = req.params;
+      const { isActive } = req.body;
+
+      const updatedUser = await storage.updateUserStatus(userId, isActive);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
+  // User stats for admin dashboard
+  app.get('/api/admin/user-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUser(req.user.claims.sub);
+      if (currentUser?.role !== 'superadmin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const stats = await storage.getUserStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // Document routes
   app.post('/api/documents', isAuthenticated, async (req: any, res) => {
     try {

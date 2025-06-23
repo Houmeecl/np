@@ -23,6 +23,13 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Admin user management
+  getAllUsers(): Promise<User[]>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUserWithCredentials(userData: any): Promise<User>;
+  updateUserStatus(userId: string, isActive: boolean): Promise<User>;
+  getUserStats(): Promise<any>;
+  
   // Document operations
   createDocument(document: InsertDocument): Promise<Document>;
   getDocument(id: number): Promise<Document | undefined>;
@@ -237,6 +244,83 @@ export class DatabaseStorage implements IStorage {
       paidAmount: paidCommissions[0]?.total || 0,
       paidCount: paidCommissions[0]?.count || 0,
     };
+  }
+
+  // Admin user management methods
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUserWithCredentials(userData: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    rut?: string;
+    phone?: string;
+  }): Promise<User> {
+    // Generate unique ID for manual user creation
+    const userId = `manual_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: userData.role as any,
+        profileImageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return user;
+  }
+
+  async updateUserStatus(userId: string, isActive: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return user;
+  }
+
+  async getUserStats(): Promise<any> {
+    const [totalUsers] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(users);
+
+    const roleStats = await db
+      .select({
+        role: users.role,
+        count: sql<number>`count(*)`,
+      })
+      .from(users)
+      .groupBy(users.role);
+
+    const stats: any = {
+      totalUsers: totalUsers.count,
+    };
+
+    // Convert role stats to object
+    roleStats.forEach(stat => {
+      const roleName = stat.role?.replace('_', '') || 'unknown';
+      stats[`${roleName}s`] = stat.count;
+    });
+
+    return stats;
   }
 }
 
