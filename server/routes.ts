@@ -109,6 +109,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple admin login endpoint for demo
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Simple validation for demo purposes
+      if (email === 'admin@notarypro.cl' && password === 'Admin123') {
+        // In production, you'd create a proper session here
+        res.json({ 
+          success: true, 
+          user: { 
+            id: 'admin_test_001', 
+            email: 'admin@notarypro.cl', 
+            role: 'superadmin',
+            firstName: 'Admin',
+            lastName: 'Sistema'
+          } 
+        });
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+    } catch (error) {
+      console.error("Error in admin login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
   // Document routes
   app.post('/api/documents', isAuthenticated, async (req: any, res) => {
     try {

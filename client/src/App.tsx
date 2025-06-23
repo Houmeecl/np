@@ -13,6 +13,7 @@ import UsuarioDashboard from "@/pages/dashboard/usuario";
 import SociosDashboard from "@/pages/dashboard/socios";
 import RRHHDashboard from "@/pages/dashboard/rrhh";
 import PosTerminal from "@/pages/pos-terminal";
+import AdminLogin from "@/pages/admin-login";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/admin" component={AdminLogin} />
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
